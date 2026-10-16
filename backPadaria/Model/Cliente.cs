@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,7 +34,12 @@ namespace backPadaria.Model
             this.Endereco = endereco;
             this.Pontos = pontos;
         }
-
+        //Gambiarra para testar 
+        public Cliente(int id, string? nome)
+        {
+            this.id = id;
+            this.nome = nome;
+        }
 
 
         public Cliente(int id,
@@ -63,28 +69,32 @@ namespace backPadaria.Model
             this.Pontos += pontos;
         }
 
-        public int Inserir(Cliente cliente)
+        public static int Inserir(Cliente cliente)
         {
-            /* Instrução SQL: Define o comando de inserção (INSERT).
-             * O uso de marcações com '@' (ex: @Nome) é uma pratica de segurança crucial chamada de "Parametrização".
-             * 
-             */
+            // Instrução SQL: Define o comando de inserção (INSERT).
+            // O uso de marcações com '@' (ex: @Nome) e uma pratica de seguranca crucial chamada de "Parametrizacao"
+            // Ela impede ataques de SQL Injection, pois o banco entende o que é comando e o que é apenas texto do usuário.
             string sql = "INSERT INTO 'Cliente' ('Nome','CPF','Telefone','Endereço','Pontos') Values (@Nome,@CPF,@Telefone,@Endereco,@Pontos)";
-
+            // Gerenciamento de recursos: Cria o objeto de comando já passando a instrução SQL.
+            // O 'using' garante que os recursos de memoria ocupados pelo comando sejam liberados ao final do bloco.
             using (var cmd = new MySqlCommand(sql))
             {
+                // Vinculação de Dados: Pega as propriedades do objeto C# (cliente.Nome, uuario.Email, etc.)
+                // e substitui de forma segura as marcações '@' da string SQL com os valores reais.
                 cmd.Parameters.AddWithValue("@Nome", cliente.Nome);
                 cmd.Parameters.AddWithValue("@CPF", cliente.Cpf);
                 cmd.Parameters.AddWithValue("@Telefone", cliente.Telefone);
                 cmd.Parameters.AddWithValue("@Endereco", cliente.Endereco);
                 cmd.Parameters.AddWithValue("@Pontos", cliente.Pontos);
 
-
-                return Banco.executarComando(cmd);
+                // Execucao: Como o comando de INSERT nao retorna tabelas (apenas executa uma ação),
+                // ele envia o comando configurado para o método genérico 'executarComando' da classe 'Banco'.
+                // 0 metodo retorna 1 (se o usuario for inserido com sucesso) ou -1 (se houver erro no banco).
+                return Banco.ExecutarComando(cmd);
 
             }
         }
-    
+
         public static int Deletar(Cliente cliente)
         {
             string sql = "DELETE FROM 'Cliente' WHERE 'Id' = @id";
@@ -92,7 +102,56 @@ namespace backPadaria.Model
             {
                 cmd.Parameters.AddWithValue("@id", cliente.id);
 
-                return Banco.executarComando(cmd);
+                return Banco.ExecutarComando(cmd);
+            }
+        }
+
+                public static List<Cliente> ListarTodos()
+        {
+            string cmdSql = "SELECT * FROM `Cliente`";
+
+            List<Cliente> listaClientes = new();
+
+            using (var cmd = new MySqlCommand(cmdSql))
+            {
+                // Executa a leitura. 0 bloco 'using' aqui é FUNDAMENTAL para garantir que o
+                // reader seja fechado no final, o que por sua vez fecha a conexao com o banco.
+                using (MySqlDataReader reader = Banco.ExecutarComRetornoDeDados(cmd))
+                {
+                    // O while vai rodar uma vez para CADA linha que existir na tabela Cliente
+                    while (reader.Read())
+                    {
+                        // Extrai os dados da linha atual
+                        int id = reader.GetInt32("Id");
+
+                        string nome = ValidarCampo(reader["Nome"]);
+
+                        string cpf = ValidarCampo(reader["CPF"]);
+                        string telefone = ValidarCampo(reader["Telefone"]);
+                        string endereco = ValidarCampo(reader["Endereco"]);
+                        int pontos = reader.GetInt32("Pontos");
+
+                        // Cria o objeto Cliente com os dados extraidos
+                        Cliente cliente = new(id, nome, cpf, endereco, telefone, pontos);
+
+                        // Adiciona este cliente a nossa lista
+                        listaClientes.Add(cliente);
+                    }
+                }
+
+                return listaClientes;
+            }
+        }
+
+        private static string ValidarCampo(object campo)
+        {
+            if (campo == DBNull.Value || campo == null)
+            {
+                return "";
+            }
+            else
+            {
+                return campo.ToString();
             }
         }
     }
