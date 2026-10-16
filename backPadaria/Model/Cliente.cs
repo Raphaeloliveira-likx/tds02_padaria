@@ -17,12 +17,12 @@ namespace backPadaria.Model
         private string endereco;
         private int pontos;
 
-        
 
-        public Cliente(string nome, 
-            string cpf, 
-            string telefone, 
-            string endereco, 
+
+        public Cliente(string nome,
+            string cpf,
+            string telefone,
+            string endereco,
             int pontos)
         {
 
@@ -34,13 +34,13 @@ namespace backPadaria.Model
             this.Pontos = pontos;
         }
 
-        
+
 
         public Cliente(int id,
-            string nome, 
-            string cpf, 
-            string telefone, 
-            string endereco, 
+            string nome,
+            string cpf,
+            string telefone,
+            string endereco,
             int pontos)
         {
             this.Id = id;
@@ -71,7 +71,7 @@ namespace backPadaria.Model
              */
             string sql = "INSERT INTO 'Cliente' ('Nome','CPF','Telefone','Endereço','Pontos') Values (@Nome,@CPF,@Telefone,@Endereco,@Pontos)";
 
-            using(var cmd = new MySqlCommand(sql))
+            using (var cmd = new MySqlCommand(sql))
             {
                 cmd.Parameters.AddWithValue("@Nome", cliente.Nome);
                 cmd.Parameters.AddWithValue("@CPF", cliente.Cpf);
@@ -82,6 +82,17 @@ namespace backPadaria.Model
 
                 return Banco.executarComando(cmd);
 
+            }
+        }
+    
+        public static int Deletar(Cliente cliente)
+        {
+            string sql = "DELETE FROM 'Cliente' WHERE 'Id' = @id";
+            using (var cmd = new MySqlCommand(sql))
+            {
+                cmd.Parameters.AddWithValue("@id", cliente.id);
+
+                return Banco.executarComando(cmd);
             }
         }
     }
