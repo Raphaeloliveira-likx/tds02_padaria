@@ -142,6 +142,63 @@ namespace backPadaria.Model
                 return listaClientes;
             }
         }
+        public static Cliente? ListarPorID(int id)
+        {
+            string sql = "SELECT * FROM 'Cliente' WHERE 'id' = @ID";
+
+            using (var cmd = new MySqlCommand(sql))
+            {
+                cmd.Parameters.AddWithValue("@Id", id);
+                MySqlDataReader reader = Banco.ExecutarComRetornoDeDados(cmd);
+                Cliente? cliente = null;
+
+                while (reader.Read())
+                {
+                    // extrair os dados da linha atual
+                    int idBanco = reader.GetInt32("Id");
+
+                    string nome = ValidarCampo(reader["Nome"]);
+                    string cpf = ValidarCampo(reader["CPF"]);
+                    string telefone = ValidarCampo(reader["Telefone"]);
+                    string endereco = ValidarCampo(reader["Endereco"]);
+
+                    int pontos = reader.GetInt32("Pontos");
+
+                    //Cria o objeto Cliente com os dados extraidos
+                    cliente = new Cliente(idBanco, nome, cpf, telefone, endereco, pontos);
+
+
+                }
+            return cliente;
+            }
+        }
+
+
+        public static int Atualizar(Cliente cliente)
+        {
+
+            string sql = "UPDATE `Cliente` SET `Nome` = @Nome, `Cpf` = @CPF, `Telefone` = @Telefone, `Endereco` = @Endereco, `Pontos` = @Pontos WHERE `Id` = @Id";
+
+            using (var cmd = new MySqlCommand(sql))
+            {
+                // Vinculação de parâmetros: Protege contra SQL Injection e organiza os dados
+                cmd.Parameters.AddWithValue("@Nome", cliente.Nome);
+                cmd.Parameters.AddWithValue("@CPF", cliente.Cpf);
+                cmd.Parameters.AddWithValue("@Telefone", cliente.Telefone);
+                cmd.Parameters.AddWithValue("@Endereco", cliente.Endereco);
+                cmd.Parameters.AddWithValue("@Pontos", cliente.Pontos);
+
+                // A chave de busca: Quem será atualizado?
+                cmd.Parameters.AddWithValue("@Id", cliente.id);
+
+                // Execução: O UPDATE também é uma instrução de ação (como INSERT e DELETE).
+                // Ele vai retornar 1 (se encontrou o ID e atualizou com sucesso) ou 0 (se o ID não existia).
+                return Banco.ExecutarComando(cmd);
+            }
+
+        }
+
+
 
         private static string ValidarCampo(object campo)
         {
