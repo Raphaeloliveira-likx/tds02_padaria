@@ -1,4 +1,5 @@
 ﻿using backPadaria.Model;
+using backPadaria.Services;
 using MySqlConnector;
 using System.ComponentModel.Design;
 using System.Reflection.Metadata.Ecma335;
@@ -86,22 +87,23 @@ namespace backPadaria
 
 
 
-            Cliente? meuCliente = Cliente.ListarPorID(7);
+            //Cliente? meuCliente = Cliente.ListarPorID(2);
 
-            if (meuCliente != null)
-            {
-                meuCliente.Endereco = "Rua Barão de Alagoas, 171";
-                meuCliente.Telefone = "1197747-8585";
+            //if (meuCliente != null)
+            //{
+            //    meuCliente.Endereco = "Rua Barão de Alagoas, 171";
+            //    meuCliente.Telefone = "1197747-8585";
+            //    int resultado = Cliente.Atualizar(meuCliente);
 
-                int resultado = Cliente.Atualizar(meuCliente);
-
-                if (resultado > 0)
-                {
-                    Console.WriteLine("Cliente atualizado com sucesso");
-                }
+            //    if (resultado > 0)
+            //    {
+            //        Console.WriteLine("Cliente atualizado com sucesso");
+            //    }
 
 
-            }
+            //}
+
+            ClienteService.menuCliente();
 
         }
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 public static class Banco
 {
-    private static string stringConnection = "Server=10.91.45.55;Port=3306;Database=padaria_bd;Uid=admin;Pwd=12345678";
+    private static string stringConnection = "Server=10.91.45.55;Port=3306;Database=padaria_bd;Uid=Likx;Pwd=123456";
 
     public static void connectAndTest()
     {
