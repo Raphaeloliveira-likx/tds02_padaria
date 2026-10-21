@@ -11,7 +11,7 @@ namespace backPadaria.Services
     internal class ClienteService
     {
         private static int resultadoAtulizar;
-       
+
 
         public static void menuCliente()
         {
@@ -51,11 +51,18 @@ namespace backPadaria.Services
                         case "3":
                             BuscarClienteMenu();
                             break;
-                        
+
                         case "4": // Atualizar
                             AtualizarClienteMenu();
                             break;
-                        
+
+                        case "5": // Deletar cliente
+                            DeletarClienteMenu();
+                            break;
+
+                        case "6": // Visualizar Pontuação
+                            VisualizarPontuacaoMenu();
+                            break;
                     }
 
                 }
@@ -138,12 +145,12 @@ namespace backPadaria.Services
             Cliente? cli1 = Cliente.ListarPorID(idCliente);
 
             Console.WriteLine($"ID: {cli1.Id} | Nome {cli1.Nome} | CPF: {cli1.Cpf}| Pontos: {cli1.Pontos} ");
-                                    
+
             Console.WriteLine("\nPressione uma tecla para continuar...");
             Console.ReadKey();
             Console.Clear();
         }
-        
+
         private static void AtualizarClienteMenu()
         {
             Console.WriteLine("====== Atualizar cliente ======");
@@ -190,6 +197,80 @@ namespace backPadaria.Services
             {
                 Console.WriteLine("Não foi possível atualizar o cliente.");
             }
+            Console.WriteLine("\nPressione uma tecla para continuar...");
+            Console.ReadKey();
+            Console.Clear();
+
+        }
+
+
+
+        private static void DeletarClienteMenu()
+        {
+            Console.WriteLine("====== DELETAR CLIENTE ======");
+
+            Console.WriteLine("Digite o ID do cliente:");
+
+            if (!int.TryParse(Console.ReadLine(), out int idCliente))
+            {
+                Console.WriteLine("ID inválido.");
+                return;
+            }
+
+            Cliente? cliente = Cliente.ListarPorID(idCliente);
+
+            if (cliente == null)
+            {
+                Console.WriteLine("Cliente não encontrado.");
+                return;
+            }
+
+
+            int resultadoDelete = Cliente.Deletar(cliente);
+
+            if (resultadoDelete > 0)
+            {
+                Console.WriteLine("Cliente excluído com sucesso!");
+            }
+            else
+            {
+                Console.WriteLine("Não foi possível excluir o cliente.");
+            }
+
+            Console.WriteLine("\nPressione uma tecla para continuar...");
+            Console.ReadKey();
+            Console.Clear();
+        }
+
+
+
+        private static void VisualizarPontuacaoMenu()
+        {
+            Console.WriteLine("====== PONTUAÇÃO DO CLIENTE ======");
+
+            Console.WriteLine("Digite o ID do cliente:");
+
+            if (!int.TryParse(Console.ReadLine(), out int idCliente))
+            {
+                Console.WriteLine("ID inválido.");
+                return;
+            }
+            Cliente? cliente = Cliente.ListarPorID(idCliente);
+
+            if (cliente == null)
+            {
+                Console.WriteLine("Cliente não encontrado.");
+
+            }
+            else
+            {
+                Console.WriteLine($"ID: {cliente.Id}");
+                Console.WriteLine($"Nome: {cliente.Nome}");
+                Console.WriteLine($"Pontuação atual: {cliente.Pontos}");
+            }
+            Console.WriteLine("\nPressione uma tecla para continuar...");
+            Console.ReadKey();
+            Console.Clear();
         }
     }
 }

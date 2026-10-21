@@ -103,8 +103,8 @@ namespace backPadaria
 
             //}
 
-            ClienteService.menuCliente();
-
+            //ClienteService.menuCliente();
+            FuncionarioService.menuFuncionario();
         }
     }
 }

@@ -97,7 +97,7 @@ namespace backPadaria.Model
 
         public static int Deletar(Cliente cliente)
         {
-            string sql = "DELETE FROM `Cliente` WHERE 'Id' = @id";
+            string sql = "DELETE FROM `Cliente` WHERE `Id` = @id";
             using (var cmd = new MySqlCommand(sql))
             {
                 cmd.Parameters.AddWithValue("@id", cliente.id);
