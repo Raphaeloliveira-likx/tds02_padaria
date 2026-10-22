@@ -104,7 +104,7 @@ namespace backPadaria
             //}
 
             //ClienteService.menuCliente();
-            FuncionarioService.menuFuncionario();
+            ProdutoService.menuProduto();
         }
     }
 }

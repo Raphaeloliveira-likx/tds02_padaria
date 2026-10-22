@@ -13,9 +13,18 @@ namespace backPadaria.Model
         private string nome;       
         private string telefone;
 
-        public Marca(int id, string nome,string telefone)
+        public Marca(
+           string nome,
+           string telefone)
         {
             if (string.IsNullOrWhiteSpace(nome)) throw new Exception("O nome da Marca nao pode estar vazio");
+            this.Nome = nome;            
+           this.Telefone = telefone;
+            
+        }
+        public Marca(int id, string nome,string telefone)
+        {
+           
             this.id = id;
             this.nome = nome;         
             this.telefone = telefone;
@@ -49,7 +58,7 @@ namespace backPadaria.Model
         {
             string cmdSql = "SELECT * FROM `Marca`";
 
-            List<Marca> listaFornecedor = new();
+            List<Marca> listaMarca = new();
 
             using (var cmd = new MySqlCommand(cmdSql))
             {
@@ -79,51 +88,48 @@ namespace backPadaria.Model
             }
         }
 
-        public static Fornecedor? ListarPorID(int id)
+        public static Marca? ListarPorID(int id)
         {
-            string sql = "SELECT * FROM `Fornecedor` WHERE `id` = @Id";
+            string sql = "SELECT * FROM `Marca` WHERE `id` = @Id";
 
             using (var cmd = new MySqlCommand(sql))
             {
                 cmd.Parameters.AddWithValue("@Id", id);
                 MySqlDataReader reader = Banco.ExecutarComRetornoDeDados(cmd);
-                Fornecedor? fornecedor = null;
+                Marca? marca = null;
 
                 while (reader.Read())
                 {
 
                     int idBanco = reader.GetInt32("Id");
-
-                    string nome = ValidarCampo(reader["Nome"]);
-                    string cnpj = ValidarCampo(reader["CNPJ"]);
+                    string nome = ValidarCampo(reader["Nome"]);                   
                     string telefone = ValidarCampo(reader["Telefone"]);
 
 
 
-                    fornecedor = new Fornecedor(idBanco, nome, cnpj, telefone);
+                    marca = new Marca(idBanco, nome, telefone);
 
 
                 }
-                return fornecedor;
+                return marca;
             }
         }
 
 
-        public static int Atualizar(Fornecedor fornecedor)
+        public static int Atualizar(Marca marca)
         {
 
-            string sql = "UPDATE `Fornecedor` SET `Nome` = @Nome, `Cnpj` = @CNPJ, `Telefone` = @Telefone WHERE `Id` = @Id";
+            string sql = "UPDATE `Marca` SET `Nome` = @Nome,`Telefone` = @Telefone WHERE `Id` = @Id";
 
             using (var cmd = new MySqlCommand(sql))
             {
 
-                cmd.Parameters.AddWithValue("@Nome", fornecedor.Nome);
-                cmd.Parameters.AddWithValue("@CPF", fornecedor.Cnpj);
-                cmd.Parameters.AddWithValue("@Telefone", fornecedor.Telefone);
+                cmd.Parameters.AddWithValue("@Nome", marca.Nome);                
+                cmd.Parameters.AddWithValue("@Telefone", marca.Telefone);
 
 
 
-                cmd.Parameters.AddWithValue("@Id", fornecedor.id);
+                cmd.Parameters.AddWithValue("@Id", marca.id);
 
 
                 return Banco.ExecutarComando(cmd);
@@ -146,4 +152,4 @@ namespace backPadaria.Model
         }
     }
 }
-}
+
