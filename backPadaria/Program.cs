@@ -104,7 +104,10 @@ namespace backPadaria
             //}
 
             //ClienteService.menuCliente();
-            ProdutoService.menuProduto();
+            //LoginFuncionario login = new LoginFuncionario(1, "jp_padoca@padariapaoecia.com.br", "deumaoito", "Diretor");
+
+            VendaService.MenuVendas();
+
         }
     }
 }

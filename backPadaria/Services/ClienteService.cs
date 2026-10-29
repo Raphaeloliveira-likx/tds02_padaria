@@ -6,71 +6,78 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace backPadaria.Services
+namespace backPadaria.Service
 {
-    internal class ClienteService
+    public static class ClienteService
     {
-        private static int resultadoAtulizar;
 
-
-        public static void menuCliente()
+        public static void MenuCliente()
         {
             bool sair = false;
+
             while (!sair)
             {
+                Console.Clear();
 
-                Console.WriteLine("===== GESTÂO DE CLIENTES =====");
+                Console.WriteLine("===== GESTÃO DE CLIENTES =====");
+
                 Console.WriteLine("1 - Cadastrar Cliente");
                 Console.WriteLine("2 - Listar Todos os Clientes");
-                Console.WriteLine("3 - Buscar Clinte por ID");
+                Console.WriteLine("3 - Buscar Cliente por ID");
                 Console.WriteLine("4 - Atualizar Cliente");
                 Console.WriteLine("5 - Excluir Cliente");
                 Console.WriteLine("6 - Visualizar pontuação");
                 Console.WriteLine("0 - Sair do Programa");
-                Console.WriteLine("===========================");
+
+                Console.WriteLine("======================");
                 Console.WriteLine("Digite uma opção: ");
 
-
                 string opcao = Console.ReadLine();
+
                 Console.Clear();
+
 
                 try
                 {
                     switch (opcao)
                     {
                         case "1": // Cadastrar
-
                             cadastrarClienteMenu();
-
                             break;
-
                         case "2": // Listar
                             listarClientesMenu();
                             break;
-
                         case "3":
-                            BuscarClienteMenu();
+                            listarPorIdClienteMenu();
+                            break;
+                        case "4":
+                            atualizarClienteMenu();
+                            break;
+                        case "5":
+                            excluirClienteMenu();
+                            break;
+                        case "6":
+                            ExibirPotuacaoClienteMenu();
+                            break;
+                        case "0":
+                            sair = true;
                             break;
 
-                        case "4": // Atualizar
-                            AtualizarClienteMenu();
-                            break;
-
-                        case "5": // Deletar cliente
-                            DeletarClienteMenu();
-                            break;
-
-                        case "6": // Visualizar Pontuação
-                            VisualizarPontuacaoMenu();
-                            break;
                     }
+
 
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"\n[ERRO DE VALIDAÇÃO]: {ex.Message}");
                 }
+
+
+
             }
+
+
+
 
         } // FIM MENU
 
@@ -108,6 +115,9 @@ namespace backPadaria.Services
 
             if (resultadoInsert > 0) Console.WriteLine("Cliente cadastrado com sucesso!!");
 
+
+            Console.WriteLine("\nPressione uma tecla para continuar...");
+            Console.ReadKey();
         }
 
         private static void listarClientesMenu()
@@ -131,146 +141,151 @@ namespace backPadaria.Services
 
             Console.WriteLine("\nPressione uma tecla para continuar...");
             Console.ReadKey();
-            Console.Clear();
+        } //
 
-        }
-
-        private static void BuscarClienteMenu()
+        private static void listarPorIdClienteMenu()
         {
-            Console.WriteLine("====== Buscar cliente por ID ======");
+            Console.WriteLine("------ BUSCAR POR ID ----- ");
+            Console.WriteLine("Digite o id do cliente: ");
 
-            Console.WriteLine("Digite o Id que deseja buscar");
-            int idCliente = int.Parse(Console.ReadLine());
+            int idConsole;
 
-            Cliente? cli1 = Cliente.ListarPorID(idCliente);
+            int.TryParse(Console.ReadLine(), out idConsole);
 
-            Console.WriteLine($"ID: {cli1.Id} | Nome {cli1.Nome} | CPF: {cli1.Cpf}| Pontos: {cli1.Pontos} ");
+            Cliente? clienteBusca = Cliente.listarPorId(idConsole);
 
-            Console.WriteLine("\nPressione uma tecla para continuar...");
-            Console.ReadKey();
-            Console.Clear();
-        }
-
-        private static void AtualizarClienteMenu()
-        {
-            Console.WriteLine("====== Atualizar cliente ======");
-
-            Console.WriteLine("Digite o Id do cliente:");
-
-            if (!int.TryParse(Console.ReadLine(), out int idCliente))
+            if (clienteBusca == null)
             {
-                Console.WriteLine("ID inválido.");
-                return;
-            }
 
-            Console.WriteLine("Digite o novo nome do cliente:");
-            string nomeCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite o novo endereço do cliente:");
-            string enderecoCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite o novo CPF do cliente:");
-            string cpfCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite o novo telefone do cliente:");
-            string telefoneCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite a nova quantidade de pontos:");
-            int pontosCliente = int.Parse(Console.ReadLine());
-
-            Cliente clienteAtualizado = new Cliente(
-                id: idCliente,
-                nome: nomeCliente,
-                cpf: cpfCliente,
-                telefone: telefoneCliente,
-                endereco: enderecoCliente,
-                pontos: pontosCliente
-            );
-
-            int resultadoUpdate = Cliente.Atualizar(clienteAtualizado);
-
-            if (resultadoUpdate > 0)
-            {
-                Console.WriteLine("Cliente atualizado com sucesso!");
-            }
-            else
-            {
-                Console.WriteLine("Não foi possível atualizar o cliente.");
-            }
-            Console.WriteLine("\nPressione uma tecla para continuar...");
-            Console.ReadKey();
-            Console.Clear();
-
-        }
-
-
-
-        private static void DeletarClienteMenu()
-        {
-            Console.WriteLine("====== DELETAR CLIENTE ======");
-
-            Console.WriteLine("Digite o ID do cliente:");
-
-            if (!int.TryParse(Console.ReadLine(), out int idCliente))
-            {
-                Console.WriteLine("ID inválido.");
-                return;
-            }
-
-            Cliente? cliente = Cliente.ListarPorID(idCliente);
-
-            if (cliente == null)
-            {
-                Console.WriteLine("Cliente não encontrado.");
-                return;
-            }
-
-
-            int resultadoDelete = Cliente.Deletar(cliente);
-
-            if (resultadoDelete > 0)
-            {
-                Console.WriteLine("Cliente excluído com sucesso!");
-            }
-            else
-            {
-                Console.WriteLine("Não foi possível excluir o cliente.");
-            }
-
-            Console.WriteLine("\nPressione uma tecla para continuar...");
-            Console.ReadKey();
-            Console.Clear();
-        }
-
-
-
-        private static void VisualizarPontuacaoMenu()
-        {
-            Console.WriteLine("====== PONTUAÇÃO DO CLIENTE ======");
-
-            Console.WriteLine("Digite o ID do cliente:");
-
-            if (!int.TryParse(Console.ReadLine(), out int idCliente))
-            {
-                Console.WriteLine("ID inválido.");
-                return;
-            }
-            Cliente? cliente = Cliente.ListarPorID(idCliente);
-
-            if (cliente == null)
-            {
-                Console.WriteLine("Cliente não encontrado.");
+                Console.WriteLine("Cliente não encontrado");
 
             }
             else
             {
-                Console.WriteLine($"ID: {cliente.Id}");
-                Console.WriteLine($"Nome: {cliente.Nome}");
-                Console.WriteLine($"Pontuação atual: {cliente.Pontos}");
+
+                Console.WriteLine($"ID: {clienteBusca.Id} " +
+                    $"\nNome {clienteBusca.Nome} " +
+                    $"\nCPF: {clienteBusca.Cpf} " +
+                    $"\nTelefone: {clienteBusca.Telefone} " +
+                    $"\nEndereco: {clienteBusca.Endereco}" +
+                    $"\nPontos: {clienteBusca.Pontos} ");
+
+
+
             }
+
             Console.WriteLine("\nPressione uma tecla para continuar...");
             Console.ReadKey();
-            Console.Clear();
-        }
+
+        } //
+
+        private static void atualizarClienteMenu()
+        {
+            Console.WriteLine("------ ATUALIZAR CLIENTE POR ID ----- ");
+            Console.WriteLine("Digite o id do cliente que deseja atualizar");
+
+            int idBusca = 0;
+            int.TryParse(Console.ReadLine(), out idBusca);
+
+            Console.WriteLine($"----------> {idBusca}");
+
+            Cliente? clienteParaAtualizar = Cliente.listarPorId(idBusca);
+
+            if (clienteParaAtualizar != null)
+            {
+
+                Console.WriteLine($"Atualizando dados de {clienteParaAtualizar.Nome}");
+
+                Console.WriteLine("Pressione ENTER sem digitar nada para manter o dado atual ");
+
+                Console.WriteLine($"Novo Endereço: Atual ({clienteParaAtualizar.Endereco})");
+
+                string novoEndereco = Console.ReadLine();
+                if (!string.IsNullOrEmpty(novoEndereco)) clienteParaAtualizar.Endereco = novoEndereco;
+
+
+                Console.WriteLine($"Novo Telefone: Atual ({clienteParaAtualizar.Telefone})");
+                string? novoTelefone = Console.ReadLine();
+                if (!string.IsNullOrEmpty(novoEndereco)) clienteParaAtualizar.Telefone = novoTelefone;
+
+
+                int resultadoAtualizacao = Cliente.Atualizar(clienteParaAtualizar);
+                if (resultadoAtualizacao > 0) Console.WriteLine("Cliente atualizado com sucesso!");
+
+            }
+            else
+            {
+                Console.WriteLine("Cliente não encontrado");
+            }
+
+
+            Console.ReadKey();
+        }//
+
+        private static void excluirClienteMenu()
+        {
+            Console.WriteLine("------ EXCLUIR CLIENTE POR ID ----- ");
+            Console.WriteLine("Digite o id do cliente que deseja excluir");
+
+            int idBusca = 0;
+            int.TryParse(Console.ReadLine(), out idBusca);
+
+
+
+            Cliente? clienteParaExcluir = Cliente.listarPorId(idBusca);
+
+            if (clienteParaExcluir != null)
+            {
+                Cliente.Deletar(clienteParaExcluir);
+                Console.WriteLine("Cliente excluído com sucesso");
+            }
+            else
+            {
+
+                Console.WriteLine("Cliente não encontrado");
+
+            }
+
+            Console.ReadKey();
+
+        } //
+
+        private static void ExibirPotuacaoClienteMenu()
+        {
+            Console.WriteLine("------ EXIBIR PONTUAÇÃO ----- ");
+            Console.WriteLine("Digite o id do cliente: ");
+
+            int idConsole;
+
+            int.TryParse(Console.ReadLine(), out idConsole);
+
+            Cliente? clienteBusca = Cliente.listarPorId(idConsole);
+
+            if (clienteBusca == null)
+            {
+
+                Console.WriteLine("Cliente não encontrado");
+
+            }
+            else
+            {
+
+                Console.WriteLine($"ID: {clienteBusca.Id} " +
+                    $"\nNome {clienteBusca.Nome} " +
+                    $"\nCPF: {clienteBusca.Cpf} " +
+                    $"\nPontos: {clienteBusca.Pontos} ");
+
+
+            }
+
+            Console.WriteLine("\nPressione uma tecla para continuar...");
+            Console.ReadKey();
+
+
+
+
+        }//
+
+
     }
 }

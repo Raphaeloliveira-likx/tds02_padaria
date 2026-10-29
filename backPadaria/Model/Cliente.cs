@@ -11,6 +11,7 @@ namespace backPadaria.Model
 {
     internal class Cliente
     {
+
         private int id;
         private string nome;
         private string cpf;
@@ -18,36 +19,19 @@ namespace backPadaria.Model
         private string endereco;
         private int pontos;
 
-
-
-        public Cliente(string nome,
-            string cpf,
-            string telefone,
-            string endereco,
-            int pontos)
+        public Cliente(string nome, string cpf, string telefone, string endereco, int pontos)
         {
 
-            if (string.IsNullOrWhiteSpace(nome)) throw new Exception("O nome do cliente nao pode estar vazio");
+            if (string.IsNullOrWhiteSpace(nome)) throw new Exception("O nome do cliente não pode ser vazio");
+
             this.Nome = nome;
             this.Cpf = cpf;
             this.Telefone = telefone;
             this.Endereco = endereco;
             this.Pontos = pontos;
         }
-        //Gambiarra para testar 
-        public Cliente(int id, string? nome)
-        {
-            this.id = id;
-            this.nome = nome;
-        }
 
-
-        public Cliente(int id,
-            string nome,
-            string cpf,
-            string telefone,
-            string endereco,
-            int pontos)
+        public Cliente(int id, string nome, string cpf, string telefone, string endereco, int pontos)
         {
             this.Id = id;
             this.Nome = nome;
@@ -55,6 +39,12 @@ namespace backPadaria.Model
             this.Telefone = telefone;
             this.Endereco = endereco;
             this.Pontos = pontos;
+        }
+
+        // Gambiarra para testar
+        public Cliente(int id)
+        {
+            this.Id = id;
         }
 
         public int Id { get => id; set => id = value; }
@@ -69,110 +59,129 @@ namespace backPadaria.Model
             this.Pontos += pontos;
         }
 
+
         public static int Inserir(Cliente cliente)
         {
             // Instrução SQL: Define o comando de inserção (INSERT).
-            // O uso de marcações com '@' (ex: @Nome) e uma pratica de seguranca crucial chamada de "Parametrizacao"
+            // O uso de marcações com '@' (ex: @Nome) é uma prática de segurança crucial chamada de "Parametrização".
             // Ela impede ataques de SQL Injection, pois o banco entende o que é comando e o que é apenas texto do usuário.
-            string sql = "INSERT INTO 'Cliente' ('Nome','CPF','Telefone','Endereço','Pontos') Values (@Nome,@CPF,@Telefone,@Endereco,@Pontos)";
+
+            string sql = "INSERT INTO `Cliente` (`Nome`, `CPF`, `Telefone`, `Endereco`, `Pontos`) VALUES (@Nome, @CPF, @Telefone, @Endereco, @Pontos)";
+
             // Gerenciamento de recursos: Cria o objeto de comando já passando a instrução SQL.
-            // O 'using' garante que os recursos de memoria ocupados pelo comando sejam liberados ao final do bloco.
+            // O 'using' garante que os recursos de memória ocupados pelo comando sejam liberados ao final do bloco.
+
             using (var cmd = new MySqlCommand(sql))
             {
-                // Vinculação de Dados: Pega as propriedades do objeto C# (cliente.Nome, uuario.Email, etc.)
+                // Vinculação de Dados: Pega as propriedades do objeto C# (cliente.Nome, cliente.cpf, etc.)
                 // e substitui de forma segura as marcações '@' da string SQL com os valores reais.
+
                 cmd.Parameters.AddWithValue("@Nome", cliente.Nome);
                 cmd.Parameters.AddWithValue("@CPF", cliente.Cpf);
                 cmd.Parameters.AddWithValue("@Telefone", cliente.Telefone);
                 cmd.Parameters.AddWithValue("@Endereco", cliente.Endereco);
                 cmd.Parameters.AddWithValue("@Pontos", cliente.Pontos);
 
-                // Execucao: Como o comando de INSERT nao retorna tabelas (apenas executa uma ação),
+                // Execução: Como o comando de INSERT não retorna tabelas (apenas executa uma ação), 
                 // ele envia o comando configurado para o método genérico 'executarComando' da classe 'Banco'.
-                // 0 metodo retorna 1 (se o usuario for inserido com sucesso) ou -1 (se houver erro no banco).
-                return Banco.ExecutarComando(cmd);
+                // O método retorna 1 (se o usuário for inserido com sucesso) ou -1 (se houver erro no banco).
 
+                return Banco.ExecutarComando(cmd);
             }
+
         }
 
         public static int Deletar(Cliente cliente)
         {
+
             string sql = "DELETE FROM `Cliente` WHERE `Id` = @id";
+
             using (var cmd = new MySqlCommand(sql))
             {
                 cmd.Parameters.AddWithValue("@id", cliente.id);
 
                 return Banco.ExecutarComando(cmd);
             }
+
         }
 
-                public static List<Cliente> ListarTodos()
+        public static List<Cliente> ListarTodos()
         {
-            string cmdSql = "SELECT * FROM `Cliente`";
+            string sql = "SELECT * FROM `Cliente`";
 
             List<Cliente> listaClientes = new();
 
-            using (var cmd = new MySqlCommand(cmdSql))
+            using (var cmd = new MySqlCommand(sql))
             {
-                // Executa a leitura. 0 bloco 'using' aqui é FUNDAMENTAL para garantir que o
-                // reader seja fechado no final, o que por sua vez fecha a conexao com o banco.
+                // Executa a leitura. O bloco 'using' aqui é FUNDAMENTAL para garantir que o 
+                // reader seja fechado no final, o que por sua vez fecha a conexão com o banco.
                 using (MySqlDataReader reader = Banco.ExecutarComRetornoDeDados(cmd))
                 {
+
                     // O while vai rodar uma vez para CADA linha que existir na tabela Cliente
                     while (reader.Read())
                     {
                         // Extrai os dados da linha atual
                         int id = reader.GetInt32("Id");
 
-                        string nome = ValidarCampo(reader["Nome"]);
+                        string nome = validarCampo(reader["Nome"]);
+                        string cpf = validarCampo(reader["CPF"]);
+                        string telefone = validarCampo(reader["Telefone"]);
+                        string endereco = validarCampo(reader["Endereco"]);
 
-                        string cpf = ValidarCampo(reader["CPF"]);
-                        string telefone = ValidarCampo(reader["Telefone"]);
-                        string endereco = ValidarCampo(reader["Endereco"]);
                         int pontos = reader.GetInt32("Pontos");
 
-                        // Cria o objeto Cliente com os dados extraidos
-                        Cliente cliente = new(id, nome, cpf, endereco, telefone, pontos);
+                        // Cria o objeto Cliente com os dados extraídos
+                        Cliente cliente = new Cliente(id, nome, cpf, telefone, endereco, pontos);
 
-                        // Adiciona este cliente a nossa lista
+                        // Adiciona este cliente à nossa lista
                         listaClientes.Add(cliente);
                     }
-                }
 
+                }
+                // Retorna a lista completa (se a tabela estiver vazia, retorna uma lista com 0 itens)
                 return listaClientes;
+
             }
+
         }
-        public static Cliente? ListarPorID(int id)
+
+        public static Cliente? listarPorId(int id)
         {
+
             string sql = "SELECT * FROM `Cliente` WHERE `id` = @Id";
+
 
             using (var cmd = new MySqlCommand(sql))
             {
                 cmd.Parameters.AddWithValue("@Id", id);
+
                 MySqlDataReader reader = Banco.ExecutarComRetornoDeDados(cmd);
+
                 Cliente? cliente = null;
 
                 while (reader.Read())
                 {
-                    // extrair os dados da linha atual
+
+                    // Extrai os dados da linha atual
                     int idBanco = reader.GetInt32("Id");
 
-                    string nome = ValidarCampo(reader["Nome"]);
-                    string cpf = ValidarCampo(reader["CPF"]);
-                    string telefone = ValidarCampo(reader["Telefone"]);
-                    string endereco = ValidarCampo(reader["Endereco"]);
+                    string nome = validarCampo(reader["Nome"]);
+                    string cpf = validarCampo(reader["CPF"]);
+                    string telefone = validarCampo(reader["Telefone"]);
+                    string endereco = validarCampo(reader["Endereco"]);
 
                     int pontos = reader.GetInt32("Pontos");
 
-                    //Cria o objeto Cliente com os dados extraidos
+                    // Cria o objeto Cliente com os dados extraídos
                     cliente = new Cliente(idBanco, nome, cpf, telefone, endereco, pontos);
 
-
                 }
-            return cliente;
-            }
-        }
 
+                return cliente;
+            }
+
+        }
 
         public static int Atualizar(Cliente cliente)
         {
@@ -200,7 +209,7 @@ namespace backPadaria.Model
 
 
 
-        private static string ValidarCampo(object campo)
+        private static string validarCampo(object campo)
         {
             if (campo == DBNull.Value || campo == null)
             {
@@ -210,6 +219,8 @@ namespace backPadaria.Model
             {
                 return campo.ToString();
             }
+
         }
     }
+
 }

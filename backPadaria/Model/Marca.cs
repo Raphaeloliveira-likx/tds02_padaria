@@ -9,137 +9,170 @@ namespace backPadaria.Model
 {
     internal class Marca
     {
-        private int id;
-        private string nome;       
-        private string telefone;
 
-        public Marca(
-           string nome,
-           string telefone)
+        private int id;
+        private string nome;
+        private string descricao;
+
+        public Marca(string nome, string descricao)
         {
-            if (string.IsNullOrWhiteSpace(nome)) throw new Exception("O nome da Marca nao pode estar vazio");
-            this.Nome = nome;            
-           this.Telefone = telefone;
-            
+
+            if (string.IsNullOrWhiteSpace(nome)) throw new Exception("O nome da marca não pode ser vazio");
+
+            this.Nome = nome;
+            this.Descricao = descricao;
         }
-        public Marca(int id, string nome,string telefone)
+
+        public Marca(int id, string nome, string descricao)
         {
-           
-            this.id = id;
-            this.nome = nome;         
-            this.telefone = telefone;
+            this.Id = id;
+            this.Nome = nome;
+            this.Descricao = descricao;
         }
+
+        // Gambiarra para testar
+        public Marca(int id)
+        {
+            this.Id = id;
+        }
+
         public int Id { get => id; set => id = value; }
-        public string Nome { get => nome; set => nome = value; }        
-        public string Telefone { get => telefone; set => telefone = value; }
+        public string Nome { get => nome; set => nome = value; }
+        public string Descricao { get => descricao; set => descricao = value; }
 
         public static int Inserir(Marca marca)
         {
-            string sql = "INSERT INTO `Marca` (`Nome`,`Telefone`) Values (@Nome,@Telefone)";
+            // Instrução SQL: Define o comando de inserção (INSERT).
+            // O uso de marcações com '@' (ex: @Nome) é uma prática de segurança crucial chamada de "Parametrização".
+            // Ela impede ataques de SQL Injection, pois o banco entende o que é comando e o que é apenas texto do usuário.
+
+            string sql = "INSERT INTO `Marca` (`Nome`, `Descricao`) VALUES (@Nome, @Descricao)";
+
+            // Gerenciamento de recursos: Cria o objeto de comando já passando a instrução SQL.
+            // O 'using' garante que os recursos de memória ocupados pelo comando sejam liberados ao final do bloco.
+
             using (var cmd = new MySqlCommand(sql))
             {
-                cmd.Parameters.AddWithValue("@Nome", marca.Nome);                
-                cmd.Parameters.AddWithValue("@Telefone", marca.Telefone);
+                // Vinculação de Dados: Pega as propriedades do objeto C# (marca.Nome, marca.Descricao, etc.)
+                // e substitui de forma segura as marcações '@' da string SQL com os valores reais.
+
+                cmd.Parameters.AddWithValue("@Nome", marca.Nome);
+                cmd.Parameters.AddWithValue("@Descricao", marca.Descricao);
+
+                // Execução: Como o comando de INSERT não retorna tabelas (apenas executa uma ação), 
+                // ele envia o comando configurado para o método genérico 'executarComando' da classe 'Banco'.
+                // O método retorna 1 (se a marca for inserida com sucesso) ou -1 (se houver erro no banco).
 
                 return Banco.ExecutarComando(cmd);
             }
+
         }
+
         public static int Deletar(Marca marca)
         {
+
             string sql = "DELETE FROM `Marca` WHERE `Id` = @id";
+
             using (var cmd = new MySqlCommand(sql))
             {
                 cmd.Parameters.AddWithValue("@id", marca.id);
 
                 return Banco.ExecutarComando(cmd);
             }
+
         }
+
         public static List<Marca> ListarTodos()
         {
-            string cmdSql = "SELECT * FROM `Marca`";
+            string sql = "SELECT * FROM `Marca`";
 
-            List<Marca> listaMarca = new();
+            List<Marca> listaMarcas = new();
 
-            using (var cmd = new MySqlCommand(cmdSql))
+            using (var cmd = new MySqlCommand(sql))
             {
-
+                // Executa a leitura. O bloco 'using' aqui é FUNDAMENTAL para garantir que o 
+                // reader seja fechado no final, o que por sua vez fecha a conexão com o banco.
                 using (MySqlDataReader reader = Banco.ExecutarComRetornoDeDados(cmd))
                 {
 
+                    // O while vai rodar uma vez para CADA linha que existir na tabela Marca
                     while (reader.Read())
                     {
-
+                        // Extrai os dados da linha atual
                         int id = reader.GetInt32("Id");
 
-                        string nome = ValidarCampo(reader["Nome"]);
-                       
-                        string telefone = ValidarCampo(reader["Telefone"]);
+                        string nome = validarCampo(reader["Nome"]);
+                        string descricao = validarCampo(reader["Descricao"]);
 
+                        // Cria o objeto Marca com os dados extraídos
+                        Marca marca = new Marca(id, nome, descricao);
 
-
-                        Marca marca = new(id, nome, telefone);
-
-
-                        listaMarca.Add(marca);
+                        // Adiciona esta marca à nossa lista
+                        listaMarcas.Add(marca);
                     }
-                }
 
-                return listaMarca;
+                }
+                // Retorna a lista completa (se a tabela estiver vazia, retorna uma lista com 0 itens)
+                return listaMarcas;
+
             }
+
         }
 
-        public static Marca? ListarPorID(int id)
+        public static Marca? listarPorId(int id)
         {
+
             string sql = "SELECT * FROM `Marca` WHERE `id` = @Id";
 
             using (var cmd = new MySqlCommand(sql))
             {
                 cmd.Parameters.AddWithValue("@Id", id);
+
                 MySqlDataReader reader = Banco.ExecutarComRetornoDeDados(cmd);
+
                 Marca? marca = null;
 
                 while (reader.Read())
                 {
 
+                    // Extrai os dados da linha atual
                     int idBanco = reader.GetInt32("Id");
-                    string nome = ValidarCampo(reader["Nome"]);                   
-                    string telefone = ValidarCampo(reader["Telefone"]);
 
+                    string nome = validarCampo(reader["Nome"]);
+                    string descricao = validarCampo(reader["Descricao"]);
 
-
-                    marca = new Marca(idBanco, nome, telefone);
-
+                    // Cria o objeto Marca com os dados extraídos
+                    marca = new Marca(idBanco, nome, descricao);
 
                 }
+
                 return marca;
             }
-        }
 
+        }
 
         public static int Atualizar(Marca marca)
         {
 
-            string sql = "UPDATE `Marca` SET `Nome` = @Nome,`Telefone` = @Telefone WHERE `Id` = @Id";
+            string sql = "UPDATE `Marca` SET `Nome` = @Nome, `Descricao` = @Descricao WHERE `Id` = @Id";
 
             using (var cmd = new MySqlCommand(sql))
             {
+                // Vinculação de parâmetros: Protege contra SQL Injection e organiza os dados
+                cmd.Parameters.AddWithValue("@Nome", marca.Nome);
+                cmd.Parameters.AddWithValue("@Descricao", marca.Descricao);
 
-                cmd.Parameters.AddWithValue("@Nome", marca.Nome);                
-                cmd.Parameters.AddWithValue("@Telefone", marca.Telefone);
-
-
-
+                // A chave de busca: Quem será atualizado?
                 cmd.Parameters.AddWithValue("@Id", marca.id);
 
-
+                // Execução: O UPDATE também é uma instrução de ação (como INSERT e DELETE).
+                // Ele vai retornar 1 (se encontrou o ID e atualizou com sucesso) ou 0 (se o ID não existia).
                 return Banco.ExecutarComando(cmd);
             }
 
         }
 
-
-
-        private static string ValidarCampo(object campo)
+        private static string validarCampo(object campo)
         {
             if (campo == DBNull.Value || campo == null)
             {
@@ -149,7 +182,8 @@ namespace backPadaria.Model
             {
                 return campo.ToString();
             }
+
         }
     }
-}
 
+}

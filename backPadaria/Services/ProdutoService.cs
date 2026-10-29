@@ -5,29 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace backPadaria.Services
+namespace backPadaria.Service
 {
-    internal class ProdutoService
+    public static class ProdutoService
     {
-        private static int resultadoAtulizar;
-
-
-        public static void menuProduto()
+        public static void MenuProduto()
         {
             bool sair = false;
             while (!sair)
             {
-
-                Console.WriteLine("===== GESTÂO DE Produtos =====");
-                Console.WriteLine("1 - Cadastrar Produto");
+                Console.Clear();
+                Console.WriteLine("===== GESTÃO DE PRODUTOS =====");
+                Console.WriteLine("1 - Registar Produto (Geral e Fabricação)");
                 Console.WriteLine("2 - Listar Todos os Produtos");
-                Console.WriteLine("3 - Buscar Produto por ID");
+                Console.WriteLine("3 - Pesquisar Produto por ID");
                 Console.WriteLine("4 - Atualizar Produto");
-                Console.WriteLine("5 - Excluir Produto");             
+                Console.WriteLine("5 - Eliminar Produto");
                 Console.WriteLine("0 - Sair do Programa");
-                Console.WriteLine("===========================");
+                Console.WriteLine("======================");
                 Console.WriteLine("Digite uma opção: ");
-
 
                 string opcao = Console.ReadLine();
                 Console.Clear();
@@ -36,229 +32,197 @@ namespace backPadaria.Services
                 {
                     switch (opcao)
                     {
-                        case "1": // Cadastrar
-
-                            CadastrarProdutoMenu();
-
-                            break;
-
-                        case "2": // Listar
-                            ListarProdutoMenu();
-                            break;
-
-                        case "3":
-                            BuscarProdutoMenu();
-                            break;
-
-                        case "4": // Atualizar
-                            AtualizarProdutoMenu();
-                            break;
-
-                        case "5": // Deletar cliente
-                            DeletarProdutoMenu();
-                            break;
-
-                        
+                        case "1": cadastrarProdutoMenu(); break;
+                        case "2": listarProdutosMenu(); break;
+                        case "3": listarPorIdProdutoMenu(); break;
+                        case "4": atualizarProdutoMenu(); break;
+                        case "5": excluirProdutoMenu(); break;
+                        case "0": sair = true; break;
+                        default: Console.WriteLine("Opção inválida."); break;
                     }
-
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"\n[ERRO DE VALIDAÇÃO]: {ex.Message}");
+                    Console.WriteLine($"\n[ERRO]: {ex.Message}");
+                    Console.WriteLine("\nPressione uma tecla para continuar...");
+                    Console.ReadKey();
+                }
+            }
+        }
+
+        private static void cadastrarProdutoMenu()
+        {
+            Console.WriteLine("------ REGISTAR PRODUTO ----- ");
+
+            Console.WriteLine("Nome do produto: ");
+            string nome = Console.ReadLine();
+
+            Console.WriteLine("Preço (Ex: 15,50): ");
+            decimal.TryParse(Console.ReadLine(), out decimal preco);
+
+            Console.WriteLine("Categoria: ");
+            string categoria = Console.ReadLine();
+
+            //  s  
+            //s
+            //S  == S
+            Console.WriteLine("O produto é de fabricação própria? (S/N): ");
+            bool fabricado = Console.ReadLine().Trim().ToUpper() == "S";
+
+            Console.WriteLine("ID da Marca: ");
+            int.TryParse(Console.ReadLine(), out int idMarca);
+
+            Produto novoProduto = new Produto(nome, preco, categoria, fabricado, idMarca);
+            int resultado = Produto.Inserir(novoProduto);
+
+            if (resultado > 0)
+            {
+                Console.WriteLine("\nProduto base registado com sucesso!");
+
+                // FLUXO MELHORADO: Se for fabricado, cadastra os detalhes imediatamente
+                if (fabricado)
+                {
+                    // Como não alteramos o Model para retornar o ID gerado (SCOPE_IDENTITY), 
+                    // buscamos o último produto inserido com este nome para fazer o vínculo.
+                    Produto produtoInserido = Produto.ListarTodos().LastOrDefault(p => p.Nome == nome);
+
+                    if (produtoInserido != null)
+                    {
+                        Console.WriteLine("\n--- DETALHES DE FABRICAÇÃO ---");
+                        Console.WriteLine("Digite a Descrição da Produção:");
+                        string descricao = Console.ReadLine();
+
+                        ProdutoFabricado novaFabricacao = new ProdutoFabricado(produtoInserido.Id, descricao);
+                        ProdutoFabricado.Inserir(novaFabricacao);
+
+                        Console.WriteLine("Detalhes de fabricação vinculados com sucesso!");
+                    }
                 }
             }
 
-        } // FIM MENU
-
-        
-
-            private static void CadastrarProdutoMenu()
-        {
-            Console.WriteLine("------ CADASTRAR PRODUTO -----");
-
-            Console.WriteLine("Digite o nome do produto:");
-            string nomeProduto = Console.ReadLine();
-
-            Console.WriteLine("Digite o preço do produto:");
-            decimal precoProduto = decimal.Parse(Console.ReadLine());
-
-            Console.WriteLine("Digite a categoria do produto:");
-            string categoriaProduto = Console.ReadLine();
-
-            Console.WriteLine("O produto é fabricado? (Sim/Não):");
-            string resposta = Console.ReadLine();
-
-            bool fabricadoProduto;
-
-            if (resposta.ToLower() == "sim")
-            {
-                fabricadoProduto = true;
-                Console.WriteLine("Produto fabricado.");
-            }
-            else if (resposta.ToLower() == "não" || resposta.ToLower() == "nao")
-            {
-                fabricadoProduto = false;
-                Console.WriteLine("Produto não fabricado.");
-            }
-            else
-            {
-                Console.WriteLine("Resposta inválida. Digite Sim ou Não.");
-                return;
-            }
-
-
-        Console.WriteLine("Digite a nova marca do produto");
-            string marcaProduto = Console.ReadLine();
-
-
-            Produto NovoProduto = new Produto(
-                nome: nomeProduto,
-                preco: precoProduto,
-                categoria: categoriaProduto,
-                fabricado: fabricadoProduto,
-                marca: marcaProduto
-            );
-
-            int resultadoInsert = Produto.Inserir(NovoProduto);
-
-            Console.Clear();
-
-            if (resultadoInsert > 0) Console.WriteLine("Produto cadastrado com sucesso!!");
-
+            Console.WriteLine("\nPressione uma tecla para continuar...");
+            Console.ReadKey();
         }
 
-        private static void ListarProdutoMenu()
+        private static void listarProdutosMenu()
         {
-            Console.WriteLine("------ LISTA DE CLIENTES ----- ");
-
-            List<Cliente> lista = Cliente.ListarTodos();
+            Console.WriteLine("------ LISTA DE PRODUTOS ----- ");
+            List<Produto> lista = Produto.ListarTodos();
 
             if (lista.Count == 0)
             {
-                Console.WriteLine("Nenhum cliente cadastrado no sistema");
-
+                Console.WriteLine("Nenhum produto registado.");
             }
             else
             {
-                foreach (var cliente in lista)
+                foreach (var produto in lista)
                 {
-                    Console.WriteLine($"ID: {cliente.Id} | Nome {cliente.Nome} | CPF: {cliente.Cpf}| Pontos: {cliente.Pontos} ");
+                    string origem = produto.Fabricado ? "Próprio" : "Terceiros";
+                    string extraInfo = "";
+
+                    // FLUXO MELHORADO: Busca a descrição de produção caso seja de fabricação própria
+                    if (produto.Fabricado)
+                    {
+                        ProdutoFabricado detalhes = ProdutoFabricado.listarPorId(produto.Id);
+                        extraInfo = detalhes != null ? $" | Produção: {detalhes.DescricaoProducao}" : " | Produção: (Sem descrição)";
+                    }
+
+                    Console.WriteLine($"ID: {produto.Id} | Nome: {produto.Nome} | Preço: {produto.Preco:C} | Categoria: {produto.Categoria} | Fabricação: {origem}{extraInfo}");
                 }
             }
 
             Console.WriteLine("\nPressione uma tecla para continuar...");
             Console.ReadKey();
-            Console.Clear();
-
         }
 
-        private static void BuscarProdutoMenu()
+        private static void listarPorIdProdutoMenu()
         {
-            Console.WriteLine("====== Buscar cliente por ID ======");
+            Console.WriteLine("------ PESQUISAR POR ID ----- ");
+            Console.WriteLine("Digite o id do produto: ");
+            int.TryParse(Console.ReadLine(), out int idConsole);
 
-            Console.WriteLine("Digite o Id que deseja buscar");
-            int idCliente = int.Parse(Console.ReadLine());
+            Produto produtoBusca = Produto.listarPorId(idConsole);
 
-            Cliente? cli1 = Cliente.ListarPorID(idCliente);
-
-            Console.WriteLine($"ID: {cli1.Id} | Nome {cli1.Nome} | CPF: {cli1.Cpf}| Pontos: {cli1.Pontos} ");
-
-            Console.WriteLine("\nPressione uma tecla para continuar...");
-            Console.ReadKey();
-            Console.Clear();
-        }
-
-        private static void AtualizarProdutoMenu()
-        {
-            Console.WriteLine("====== Atualizar cliente ======");
-
-            Console.WriteLine("Digite o Id do cliente:");
-
-            if (!int.TryParse(Console.ReadLine(), out int idCliente))
+            if (produtoBusca == null)
             {
-                Console.WriteLine("ID inválido.");
-                return;
-            }
-
-            Console.WriteLine("Digite o novo nome do cliente:");
-            string nomeCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite o novo endereço do cliente:");
-            string enderecoCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite o novo CPF do cliente:");
-            string cpfCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite o novo telefone do cliente:");
-            string telefoneCliente = Console.ReadLine();
-
-            Console.WriteLine("Digite a nova quantidade de pontos:");
-            int pontosCliente = int.Parse(Console.ReadLine());
-
-            Cliente clienteAtualizado = new Cliente(
-                id: idCliente,
-                nome: nomeCliente,
-                cpf: cpfCliente,
-                telefone: telefoneCliente,
-                endereco: enderecoCliente,
-                pontos: pontosCliente
-            );
-
-            int resultadoUpdate = Cliente.Atualizar(clienteAtualizado);
-
-            if (resultadoUpdate > 0)
-            {
-                Console.WriteLine("Cliente atualizado com sucesso!");
+                Console.WriteLine("Produto não encontrado.");
             }
             else
             {
-                Console.WriteLine("Não foi possível atualizar o cliente.");
+                string origem = produtoBusca.Fabricado ? "Próprio" : "Terceiros";
+                Console.WriteLine($"ID: {produtoBusca.Id}\nNome: {produtoBusca.Nome}\nPreço: {produtoBusca.Preco:C}\nCategoria: {produtoBusca.Categoria}\nFabricação: {origem}\nID Marca: {produtoBusca.MarcaId}");
+
+                // FLUXO MELHORADO: Mostra detalhes de fabricação no mesmo ecrã
+                if (produtoBusca.Fabricado)
+                {
+                    Console.WriteLine("\n--- DETALHES DE FABRICAÇÃO ---");
+                    ProdutoFabricado detalhes = ProdutoFabricado.listarPorId(produtoBusca.Id);
+                    if (detalhes != null)
+                        Console.WriteLine($"Descrição: {detalhes.DescricaoProducao}");
+                    else
+                        Console.WriteLine("Nenhuma descrição registada na base de dados.");
+                }
             }
+
             Console.WriteLine("\nPressione uma tecla para continuar...");
             Console.ReadKey();
-            Console.Clear();
-
         }
 
-
-
-        private static void DeletarProdutoMenu()
+        private static void atualizarProdutoMenu()
         {
-            Console.WriteLine("====== DELETAR CLIENTE ======");
+            Console.WriteLine("------ ATUALIZAR PRODUTO POR ID ----- ");
+            Console.WriteLine("Digite o id do produto que deseja atualizar: ");
+            int.TryParse(Console.ReadLine(), out int idBusca);
 
-            Console.WriteLine("Digite o ID do cliente:");
+            Produto produto = Produto.listarPorId(idBusca);
 
-            if (!int.TryParse(Console.ReadLine(), out int idCliente))
+            if (produto != null)
             {
-                Console.WriteLine("ID inválido.");
-                return;
-            }
+                Console.WriteLine($"A atualizar: {produto.Nome}");
+                Console.WriteLine("(Pressione ENTER vazio para manter o dado atual)\n");
 
-            Cliente? cliente = Cliente.ListarPorID(idCliente);
+                Console.WriteLine($"Novo Nome ({produto.Nome}): ");
+                string novoNome = Console.ReadLine();
+                if (!string.IsNullOrEmpty(novoNome)) produto.Nome = novoNome;
 
-            if (cliente == null)
-            {
-                Console.WriteLine("Cliente não encontrado.");
-                return;
-            }
+                Console.WriteLine($"Novo Preço ({produto.Preco:C}): ");
+                if (decimal.TryParse(Console.ReadLine(), out decimal novoPreco)) produto.Preco = novoPreco;
 
-
-            int resultadoDelete = Cliente.Deletar(cliente);
-
-            if (resultadoDelete > 0)
-            {
-                Console.WriteLine("Cliente excluído com sucesso!");
+                int resultado = Produto.Atualizar(produto);
+                if (resultado > 0) Console.WriteLine("Produto atualizado com sucesso!");
             }
             else
             {
-                Console.WriteLine("Não foi possível excluir o cliente.");
+                Console.WriteLine("Produto não encontrado.");
             }
 
-            Console.WriteLine("\nPressione uma tecla para continuar...");
             Console.ReadKey();
-            Console.Clear();
-        }            
+        }
+
+        private static void excluirProdutoMenu()
+        {
+            Console.WriteLine("------ ELIMINAR PRODUTO ----- ");
+            Console.WriteLine("Digite o ID: ");
+            int.TryParse(Console.ReadLine(), out int id);
+
+            Produto produto = Produto.listarPorId(id);
+            if (produto != null)
+            {
+                // Se for de fabricação própria, deve excluir os detalhes de produção primeiro para evitar erro de Foreign Key
+                if (produto.Fabricado)
+                {
+                    ProdutoFabricado detalhes = ProdutoFabricado.listarPorId(produto.Id);
+                    if (detalhes != null) ProdutoFabricado.Deletar(detalhes);
+                }
+
+                Produto.Deletar(produto);
+                Console.WriteLine("Produto eliminado com sucesso.");
+            }
+            else
+            {
+                Console.WriteLine("Produto não encontrado.");
+            }
+            Console.ReadKey();
+        }
     }
 }
-    
-
